@@ -7,10 +7,6 @@ import json
 
 load_dotenv() # loads the contents of the .env file
 
-rpg_db = os.path.join(
-    os.path.dirname(__file__), "data", "rpg_db.sqlite3"
-)
-
 DB_HOST = os.getenv("DB_HOST", default="OOPS")
 DB_NAME = os.getenv("DB_NAME", default="OOPS")
 DB_USER = os.getenv("DB_USER", default="OOPS")
@@ -22,10 +18,18 @@ conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host
 ### A "cursor", a structure to iterate over db records to perform queries
 cur = conn.cursor()
 
-conn_sql = sqlite3.connect(rpg_db)
-conn_sql.text_factory = lambda x: str(x, 'latin1')
+### An example query
+my_dict = {"a": 1, "b": ["dog", "cat", 42], "c": "true"}
 
-cur_sql = conn_sql.cursor()
+insertion_query = f"INSERT INTO table1 (col1, col2) VALUES %s"
+execute_values(cur, insertion_query, [
+    ("row 1", 'null'),
+    ("row two with JSON", json.dumps(my_dict)),
+    ("row 3", "3")
+])
 
-cur_sql.execute("SELECT * FROM armory_item")
-cur_sql.fetchall()
+conn.commit()  
+cur.close()
+conn.close()
+
+exit()
